@@ -11,3 +11,7 @@ class File(override val parentPath: String, override val name: String, contents:
 
   def getType: String = "File"
 }
+
+object File {
+  def empty(parentPath: String, name: String): File = new File(parentPath, name, "")
+}
