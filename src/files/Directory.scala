@@ -1,5 +1,7 @@
 package files
 
+import filesystem.FilesystemException
+
 class Directory(override val parentPath: String, override val name: String, val contents: List[DirEntry])
   extends DirEntry(parentPath, name) {
 
@@ -28,6 +30,8 @@ class Directory(override val parentPath: String, override val name: String, val 
     new Directory(parentPath, name, contents.filter(e => !e.name.equals(entryName)) :+ newEntry)
 
   def asDirectory: Directory = this
+
+  def asFile: File = throw new FilesystemException("A directory cannot be converted to a file!")
 
   def getType: String = "Directory"
 }
