@@ -28,12 +28,12 @@ abstract class CreateEntry(name: String) extends Command {
     val wd = state.wd
 
     val allDirsInPath = wd.getAllFoldersInPath
-    val newEntry: DirEntry = createSpecificEntry(state, name)
+    val newEntry: DirEntry = createSpecificEntry(state)
     val newRoot = updateStructure(state.root, allDirsInPath, newEntry)
     val newWd = newRoot.findDescendant(allDirsInPath)
 
     State(newRoot, newWd)
   }
 
-  def createSpecificEntry(state: State, entryName: String): DirEntry
+  def createSpecificEntry(state: State): DirEntry
 }
