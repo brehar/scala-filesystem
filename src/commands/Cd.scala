@@ -32,8 +32,20 @@ class Cd(dir: String) extends Command {
         else findEntryHelper(nextDir.asDirectory, path.tail)
       }
 
-    val tokens: List[String] = path.substring(1).split(Directory.SEPARATOR).toList
+    @scala.annotation.tailrec
+    def collapseRelativeTokens(path: List[String], result: List[String]): List[String] = {
+      if (path.isEmpty) result
+      else if (".".equals(path.head)) collapseRelativeTokens(path.tail, result)
+      else if ("..".equals(path.head)) {
+        if (result.isEmpty) collapseRelativeTokens(path.tail, result)
+        else collapseRelativeTokens(path.tail, result.init)
+      }
+      else collapseRelativeTokens(path.tail, result :+ path.head)
+    }
 
-    findEntryHelper(root, tokens)
+    val tokens: List[String] = path.substring(1).split(Directory.SEPARATOR).toList
+    val newTokens: List[String] = collapseRelativeTokens(tokens, List())
+
+    findEntryHelper(root, newTokens)
   }
 }
