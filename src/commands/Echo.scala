@@ -1,5 +1,6 @@
 package commands
 
+import files.{Directory, File}
 import filesystem.State
 
 class Echo(args: Array[String]) extends Command {
@@ -31,5 +32,39 @@ class Echo(args: Array[String]) extends Command {
     createContentHelper(0, "")
   }
 
-  def doEcho(state: State, contents: String, filename: String, append: Boolean): State = ???
+  def getRootAfterEcho(currentDirectory: Directory, path: List[String], contents: String, append: Boolean): Directory = {
+    if (path.isEmpty) currentDirectory
+    else if (path.tail.isEmpty) {
+      val dirEntry = currentDirectory.findEntry(path.head)
+
+      if (dirEntry == null) currentDirectory.addEntry(new File(currentDirectory.path, path.head, contents))
+      else if (dirEntry.isDirectory) currentDirectory
+      else {
+        if (append) currentDirectory.replaceEntry(path.head, dirEntry.asFile.appendContents(contents))
+        else currentDirectory.replaceEntry(path.head, dirEntry.asFile.setContents(contents))
+      }
+    }
+    else {
+      val nextDirectory = currentDirectory.findEntry(path.head).asDirectory
+      val newNextDirectory = getRootAfterEcho(nextDirectory, path.tail, contents, append)
+
+      if (newNextDirectory == nextDirectory) currentDirectory
+      else currentDirectory.replaceEntry(path.head, newNextDirectory)
+    }
+  }
+
+  def doEcho(state: State, contents: String, filename: String, append: Boolean): State = {
+    if (filename.contains(Directory.SEPARATOR))
+      state.setMessage(filename + " must not contain directory separators!")
+    else if (checkIllegal(filename)) state.setMessage(filename + ": illegal entry name!")
+    else {
+      val newRoot: Directory =
+        getRootAfterEcho(state.root, state.wd.getAllFoldersInPath :+ filename, contents, append)
+
+      if (newRoot == state.root) state.setMessage(filename + ": no such file!")
+      else State(newRoot, newRoot.findDescendant(state.wd.getAllFoldersInPath))
+    }
+  }
+
+  def checkIllegal(name: String): Boolean = name.contains(".")
 }
