@@ -15,7 +15,7 @@ class Cd(dir: String) extends Command {
 
     val destinationDirectory = doFindEntry(root, absolutePath)
 
-    if (destinationDirectory == null) state.setMessage(dir + ": no such directory!")
+    if (destinationDirectory == null) state.setMessage(dir + ": no such entry!")
     else if (!destinationDirectory.isDirectory) state.setMessage(dir + ": is not a directory!")
     else State(root, destinationDirectory.asDirectory)
   }
